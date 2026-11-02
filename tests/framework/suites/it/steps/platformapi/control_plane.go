@@ -96,6 +96,7 @@ func Register(sc *godog.ScenarioContext, topo *runtime.Topology, funnel *httpx.F
 	RegisterPublication(sc, s)
 	RegisterPortalEvents(sc, s)
 	RegisterMCPServer(sc, s)
+	RegisterAPIDefinition(sc, s)
 	RegisterServiceAccount(sc, s)
 }
 
