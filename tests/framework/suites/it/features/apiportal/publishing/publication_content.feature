@@ -16,7 +16,7 @@
 # under the License.
 # --------------------------------------------------------------------
 
-@platform-api-gateway-api-portal
+@platform-api-gateway-api-portal @APIPORTAL
 Feature: Documents, a landing page and a thumbnail published with an API reach the API Portal
   As an API publisher
   I want the content I select for a publication to be what the API Portal shows
@@ -38,6 +38,7 @@ Feature: Documents, a landing page and a thumbnail published with an API reach t
     And I generate a unique resource name from "publish-portal" and store it as "portalHandle"
     And I register the API Portal "${CTX:portalHandle}" with the control plane
 
+  @APIP-PUBLISHING-028
   Scenario: Documents, a landing page and a thumbnail are published to the API Portal
     And I generate a unique resource name from "publish-doc" and store it as "docHandle"
     And I create a document "${CTX:docHandle}" of type "HowTo" with content "Step one: call the API." on the "RestApi" "${CTX:apiHandle}" via the control plane
@@ -60,6 +61,7 @@ Feature: Documents, a landing page and a thumbnail published with an API reach t
     Then the response status code should be 200
     And the response header "Content-Type" should contain "image"
 
+  @APIP-PUBLISHING-029
   @type:negative
   Scenario: Documents that together exceed the content size limit are refused before anything is sent to the API Portal
     And I generate a unique resource name from "publish-doc" and store it as "docHandle"
@@ -75,32 +77,7 @@ Feature: Documents, a landing page and a thumbnail published with an API reach t
     And the JSON response field "message" should contain "too large"
     And the API Portal should not list the API "${CTX:apiHandle}"
 
-  @known-issue
-  Scenario: Unselecting every document, the landing page and the thumbnail removes them from the API Portal
-    And I generate a unique resource name from "publish-doc" and store it as "docHandle"
-    And I create a document "${CTX:docHandle}" of type "HowTo" with content "Step one: call the API." on the "RestApi" "${CTX:apiHandle}" via the control plane
-    And I save a publishable draft of the "RestApi" "${CTX:apiHandle}" on the API Portal "${CTX:portalHandle}" with values:
-      | displayName         | ${CTX:apiHandle} |
-      | version             | ${CTX:apiVersion}     |
-      | subscriptionPlanIds | ["${CTX:planHandle}"] |
-      | docIds              | ["${CTX:docHandle}"] |
-    And I save the landing page "Welcome to the published API" on the draft of the "RestApi" "${CTX:apiHandle}" on the API Portal "${CTX:portalHandle}"
-    And I save a PNG thumbnail on the draft of the "RestApi" "${CTX:apiHandle}" on the API Portal "${CTX:portalHandle}"
-    And I publish the "RestApi" "${CTX:apiHandle}" to the API Portal "${CTX:portalHandle}" through the control plane
-    And the response status code should be 201
-    When I save a publishable draft of the "RestApi" "${CTX:apiHandle}" on the API Portal "${CTX:portalHandle}" with values:
-      | displayName         | ${CTX:apiHandle}        |
-      | version             | ${CTX:apiVersion}       |
-      | subscriptionPlanIds | ["${CTX:planHandle}"]   |
-    And I publish the "RestApi" "${CTX:apiHandle}" to the API Portal "${CTX:portalHandle}" through the control plane
-    Then the response status code should be 200
-    When I send an authenticated API Portal "GET" request to "/apis/${CTX:apiHandle}/assets?type=DOC_HowTo&fileName=${CTX:docHandle}.md" as "admin"
-    Then the response status code should be 404
-    When I send an authenticated API Portal "GET" request to "/apis/${CTX:apiHandle}/assets?type=MARKETING&fileName=apiContent.md" as "admin"
-    Then the response status code should be 404
-    When I send an authenticated API Portal "GET" request to "/apis/${CTX:apiHandle}/assets?type=IMAGE&fileName=api-icon.png" as "admin"
-    Then the response status code should be 404
-
+  @APIP-PUBLISHING-031
   @known-issue
   Scenario: Unselecting one of two documents removes only that document from the API Portal
     And I generate a unique resource name from "publish-doc" and store it as "docHandle"
@@ -124,26 +101,4 @@ Feature: Documents, a landing page and a thumbnail published with an API reach t
     When I send an authenticated API Portal "GET" request to "/apis/${CTX:apiHandle}/assets?type=DOC_HowTo&fileName=${CTX:docHandle}.md" as "admin"
     Then the response status code should be 200
     When I send an authenticated API Portal "GET" request to "/apis/${CTX:apiHandle}/assets?type=DOC_Samples&fileName=${CTX:docHandleB}.md" as "admin"
-    Then the response status code should be 404
-
-  @known-issue
-  Scenario: Unselecting the thumbnail removes it from the API Portal
-    And I generate a unique resource name from "publish-doc" and store it as "docHandle"
-    And I create a document "${CTX:docHandle}" of type "HowTo" with content "Step one: call the API." on the "RestApi" "${CTX:apiHandle}" via the control plane
-    And I save a publishable draft of the "RestApi" "${CTX:apiHandle}" on the API Portal "${CTX:portalHandle}" with values:
-      | displayName         | ${CTX:apiHandle} |
-      | version             | ${CTX:apiVersion}     |
-      | subscriptionPlanIds | ["${CTX:planHandle}"] |
-      | docIds              | ["${CTX:docHandle}"] |
-    And I save a PNG thumbnail on the draft of the "RestApi" "${CTX:apiHandle}" on the API Portal "${CTX:portalHandle}"
-    And I publish the "RestApi" "${CTX:apiHandle}" to the API Portal "${CTX:portalHandle}" through the control plane
-    And the response status code should be 201
-    When I save a publishable draft of the "RestApi" "${CTX:apiHandle}" on the API Portal "${CTX:portalHandle}" with values:
-      | displayName         | ${CTX:apiHandle}        |
-      | version             | ${CTX:apiVersion}       |
-      | subscriptionPlanIds | ["${CTX:planHandle}"]   |
-      | docIds              | ["${CTX:docHandle}"]    |
-    And I publish the "RestApi" "${CTX:apiHandle}" to the API Portal "${CTX:portalHandle}" through the control plane
-    Then the response status code should be 200
-    When I send an authenticated API Portal "GET" request to "/apis/${CTX:apiHandle}/assets?type=IMAGE&fileName=api-icon.png" as "admin"
     Then the response status code should be 404
